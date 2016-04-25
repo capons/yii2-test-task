@@ -2,11 +2,12 @@
 
 namespace backend\models;
 
+use common\models\Settings;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use common\models\Product;
-
+use yii\db\QueryBuilder;
 /**
  * ProductSearch represents the model behind the search form about `common\models\Product`.
  */
@@ -20,7 +21,7 @@ class ProductSearch extends Product
         return [
             [['id', 'category_id'], 'integer'],
             [['title', 'description','cat_search'], 'safe'],
-            [['price'], 'number'],
+            [['price','crop_text'], 'number'],
         ];
     }
 
@@ -57,11 +58,29 @@ class ProductSearch extends Product
             'category_id' => $this->category_id,
             'price' => $this->price,
         ]);
-
         $query->andFilterWhere(['like', 'product.title', $this->title])
               ->andFilterWhere(['like', 'description', $this->description])
               ->andFilterWhere(['like', 'category.id', $this->cat_search]);
 
-        return $dataProvider;
+        $count = Settings::find() //check have settings or no
+            ->count();
+        if($count > 0) {
+            $return_id = Settings::find()->asArray()->all();
+            $connection = Yii::$app->db->createCommand()
+                ->update('settings', ['crop_text' => $this->crop_text], 'id = "'.$return_id[0]['id'].'"')
+                ->execute();
+            return $dataProvider;
+        } else {
+            $settings = new Settings();
+            $settings->crop_text = $this->crop_text;
+            $settings->save();
+            return $dataProvider;
+        }
+           // return $dataProvider;
+
+
+
+
+
     }
 }

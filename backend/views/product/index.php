@@ -5,6 +5,7 @@ use yii\grid\GridView;
 use yii\helpers\Url;
 use common\models\Category;
 use yii\helpers\ArrayHelper;
+use common\models\Settings;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\ProductSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -26,7 +27,23 @@ $this->params['breadcrumbs'][] = $this->title;
         'filterModel' => $searchModel,
         'columns' => [
             'title',
-            'description:ntext',
+            //'description',   //:ntext
+            [
+                'attribute' => 'description',
+                'value' =>
+                    function ($res) { //show product description and only 20 latter remaining
+                        $count = Settings::find() //check have settings or no
+                        ->count();
+                        if($count > 0) {
+                            $settings = Settings::find()->asArray()->all();
+                            $convert_sring = substr($res->description, 0, $settings[0]['crop_text']) . '...'; //crop text
+                            return $convert_sring;
+                        } else {
+                            return $res->description;
+                        }
+                    },
+                'filter' => Html::activeDropDownList($searchModel, 'cat_search', ArrayHelper::map(Category::find()->all(), 'id', 'title'),['class'=>'form-control','prompt' => 'Select Category']),
+            ],
             [
                 'attribute' => 'category_id',
                 'value' => function ($model) {
@@ -43,6 +60,14 @@ $this->params['breadcrumbs'][] = $this->title;
                 'filter' => Html::activeDropDownList($searchModel, 'cat_search', ArrayHelper::map(Category::find()->all(), 'id', 'title'),['class'=>'form-control','prompt' => 'Select Category']),
             ],
             [
+                'attribute' => 'crop_text',
+                 'value' => function(){
+                     return 'test';
+                 },
+
+
+            ],
+            [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => '{view} {update} {images} {delete}',
                 'buttons' => [
@@ -52,6 +77,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
             ],
         ],
-    ]); ?>
+    ]);
+    ?>
 
 </div>

@@ -52,8 +52,9 @@ class Product extends \yii\db\ActiveRecord implements CartPositionInterface
         return [
             [['description'], 'string'],
             [['category_id'], 'integer'],
-            [['price'], 'number'],
-            [['title'], 'string', 'max' => 255]
+            [['price','crop_text'], 'number'],
+            [['title'], 'string', 'max' => 255],
+
         ];
     }
 
@@ -70,6 +71,7 @@ class Product extends \yii\db\ActiveRecord implements CartPositionInterface
             'category_id' => 'Category ID',
             'price' => 'Price',
             'cat_search' => 'Category',
+            'crop_text' => 'Description crop',
         ];
     }
 
@@ -116,7 +118,7 @@ class Product extends \yii\db\ActiveRecord implements CartPositionInterface
     public function attributes()
     {
         // add related fields to searchable attributes
-        return array_merge(parent::attributes(), ['cat_search']); //ADD Colums for inner join table //category.name -> table and column name
+        return array_merge(parent::attributes(), ['cat_search','crop_text']); //ADD Colums for inner join table //category.name -> table and column name
     }
 
 }
