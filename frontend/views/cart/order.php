@@ -1,9 +1,12 @@
 <?php
+require_once('C:/xampp/htdocs/bogdan/yii_test/yii2-test-task/vendor/autoload.php');
 use \yii\helpers\Html;
 use \yii\bootstrap\ActiveForm;
 use yii\bootstrap\Modal;
-use ruskid\stripe\StripeCheckout;
-
+use Stripe\Stripe;
+use yii\base\Application;
+use yii\BaseYii;
+use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $products common\models\Product[] */
 ?>
@@ -75,10 +78,12 @@ use ruskid\stripe\StripeCheckout;
            
             <?php
             echo '<pre>';
-            print_r($_POST);
+           // print_r($_POST);
             echo '</pre>';
-            if (isset($pay)){
-                echo $pay;
+
+           // Stripe::setApiKey("YOUR API KEY");
+            if(isset($_SESSION['test'])){
+                echo $_SESSION['test'];
             }
             ?>
 

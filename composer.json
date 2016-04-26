@@ -19,6 +19,7 @@
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "*",
         "omnilight/yii2-shopping-cart": "~1.0",
+        "stripe/stripe-php": "dev-master",
         "ruskid/yii2-stripe": "dev-master"
     },
     "require-dev": {

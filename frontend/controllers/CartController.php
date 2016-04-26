@@ -7,6 +7,7 @@ use common\models\OrderItem;
 use common\models\Product;
 use yz\shoppingcart\ShoppingCart;
 use yii\helpers\Url;
+use Stripe\Stripe;
 
 class CartController extends \yii\web\Controller
 {
@@ -62,9 +63,69 @@ class CartController extends \yii\web\Controller
         $products = $cart->getPositions();
         $total = $cart->getCost();
 
+
+        //pay condition
+        if (isset($_POST['stripeToken'])) {
+            //try {
+            Stripe::setApiKey("sk_test_Pmtiqut8msdIXyyZqGniDvBy");
+            $token = $_POST['stripeToken'];
+
+            $customer = \Stripe\Customer::create(array(
+                'email' => $_POST['stripeEmail'],
+                'card' => $token
+            ));
+            //end payment
+            \Stripe\Charge::create(array(
+                'customer' =>$customer->id,
+                'amount' => $total,
+                'currency' => 'usd'
+            ));
+            $_SESSION['test'] = 'test';
+
+            $success = 1;
+            $paymentProcessor="Credit card (www.stripe.com)";
+            /*
+        } catch(Stripe\CardError $e) {
+            $error1 = $e->getMessage();
+        } catch (Stripe\InvalidRequestError $e) {
+            // Invalid parameters were supplied to Stripe's API
+            $error2 = $e->getMessage();
+        } catch (Stripe\AuthenticationError $e) {
+            // Authentication with Stripe's API failed
+            $error3 = $e->getMessage();
+        } catch (Stripe\ApiConnectionError $e) {
+            // Network communication with Stripe failed
+            $error4 = $e->getMessage();
+        } catch (Stripe\Error $e) {
+            // Display a very generic error to the user, and maybe send
+            // yourself an email
+            $error5 = $e->getMessage();
+        } catch (Exception $e) {
+            // Something else happened, completely unrelated to Stripe
+            $error6 = $e->getMessage();
+        }
+
+        if ($success!=1)
+        {
+            $_SESSION['error1'] = $error1;
+            $_SESSION['error2'] = $error2;
+            $_SESSION['error3'] = $error3;
+            $_SESSION['error4'] = $error4;
+            $_SESSION['error5'] = $error5;
+            $_SESSION['error6'] = $error6;
+            header('Location: checkout.php');
+            exit();
+        }
+            */
+
+        }
+
+
+
         if ($order->load(\Yii::$app->request->post()) && $order->validate()) {
-            
-            if(!empty($_POST['Order']['status'])){
+            if(!empty($_POST['Order']['status'])){ //create order with Stripe pay
+
+                //СОХРАНИТЬ ВСЕ ДАННЫЕ В СЕСИЮ И ПО ОКОНЧАНИЮ ОПЛАТЫ ИЗ СЕССИИ ПЕРЕНЕСТИ В БАЗУ
                 //$_POST['start_pay'] = 'some secret key';
                 return $this->render('pay',[
                     'products' => $products,
@@ -79,31 +140,32 @@ class CartController extends \yii\web\Controller
                     'total' => $total,
                 ]);
                 */
-            }
-            $transaction = $order->getDb()->beginTransaction();
-            $order->save(false);
+            } else { //create order without pay
+                $transaction = $order->getDb()->beginTransaction();
+                $order->save(false);
 
-            foreach($products as $product) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $orderItem->title = $product->title;
-                $orderItem->price = $product->getPrice();
-                $orderItem->product_id = $product->id;
-                $orderItem->quantity = $product->getQuantity();
-                if (!$orderItem->save(false)) {
-                    $transaction->rollBack();
-                    \Yii::$app->session->addFlash('error', 'Cannot place your order. Please contact us.');
-                    return $this->redirect('catalog/list');
+                foreach ($products as $product) {
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->title = $product->title;
+                    $orderItem->price = $product->getPrice();
+                    $orderItem->product_id = $product->id;
+                    $orderItem->quantity = $product->getQuantity();
+                    if (!$orderItem->save(false)) {
+                        $transaction->rollBack();
+                        \Yii::$app->session->addFlash('error', 'Cannot place your order. Please contact us.');
+                        return $this->redirect('catalog/list');
+                    }
                 }
+
+                $transaction->commit();
+                \Yii::$app->cart->removeAll();
+
+                \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
+                $order->sendEmail();
+
+                return $this->redirect('catalog/list');
             }
-
-            $transaction->commit();
-            \Yii::$app->cart->removeAll();
-
-            \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
-            $order->sendEmail();
-
-            //return $this->redirect('catalog/list');
         }
 
         return $this->render('order', [
@@ -118,9 +180,11 @@ class CartController extends \yii\web\Controller
         $cart = \Yii::$app->cart;
         $products = $cart->getPositions();
         $total = $cart->getCost();
+        $pay = '';
         return $this->render('pay',[
             'products' => $products,
             'total' => $total,
+            'pay' => $pay,
         ]);
     }
 }
