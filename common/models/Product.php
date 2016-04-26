@@ -6,6 +6,7 @@ use Yii;
 use yii\behaviors\SluggableBehavior;
 use yz\shoppingcart\CartPositionInterface;
 use yz\shoppingcart\CartPositionTrait;
+use common\models\Settings;
 
 /**
  * This is the model class for table "product".
@@ -63,6 +64,14 @@ class Product extends \yii\db\ActiveRecord implements CartPositionInterface
      */
     public function attributeLabels()
     {
+        $settings = Settings::find()->asArray()->all();
+        $count = Settings::find() //check have settings or no
+        ->count();
+        if($count > 0) {  //if true display crop latter count
+            $crop = '('.$settings[0]['crop_text'].')';
+        } else {
+            $crop = null;
+        }
         return [
             'id' => 'ID',
             'title' => 'Title',
@@ -71,7 +80,7 @@ class Product extends \yii\db\ActiveRecord implements CartPositionInterface
             'category_id' => 'Category ID',
             'price' => 'Price',
             'cat_search' => 'Category',
-            'crop_text' => 'Description crop',
+            'crop_text' => 'Description crop '.$crop.'', //display count latter crop
         ];
     }
 

@@ -27,7 +27,6 @@ $this->params['breadcrumbs'][] = $this->title;
         'filterModel' => $searchModel,
         'columns' => [
             'title',
-            //'description',   //:ntext
             [
                 'attribute' => 'description',
                 'value' =>
@@ -42,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             return $res->description;
                         }
                     },
-                'filter' => Html::activeDropDownList($searchModel, 'cat_search', ArrayHelper::map(Category::find()->all(), 'id', 'title'),['class'=>'form-control','prompt' => 'Select Category']),
+               // 'filter' => Html::activeDropDownList($searchModel, 'cat_search', ArrayHelper::map(Category::find()->all(), 'id', 'title'),['class'=>'form-control','prompt' => 'Select Category']),
             ],
             [
                 'attribute' => 'category_id',
@@ -62,7 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'attribute' => 'crop_text',
                  'value' => function(){
-                     return 'test';
+                     return ''; //display empty field
                  },
 
 

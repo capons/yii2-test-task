@@ -64,15 +64,25 @@ class ProductSearch extends Product
 
         $count = Settings::find() //check have settings or no
             ->count();
+        if(isset($this->title) && isset($this->cat_search) && isset($this->category_id) && isset($this->price) && isset($this->crop_text)){
+            $setting_title = 'crop_description'; // creat settings title for reques
+        }
         if($count > 0) {
-            $return_id = Settings::find()->asArray()->all();
-            $connection = Yii::$app->db->createCommand()
-                ->update('settings', ['crop_text' => $this->crop_text], 'id = "'.$return_id[0]['id'].'"')
+           // $return_id = Settings::find()->asArray()->all();
+            //$return_id[0]['id']
+            if(empty($this->crop_text)){ //if result empty -> insert default result
+                $crop_count = 20;
+            } else {
+                $crop_count = $this->crop_text;
+            }
+            Yii::$app->db->createCommand()
+                ->update('settings', ['crop_text' => $crop_count], 'settings_name = "'.$setting_title.'"')
                 ->execute();
             return $dataProvider;
         } else {
             $settings = new Settings();
             $settings->crop_text = $this->crop_text;
+            $settings->settings_name = $setting_title;
             $settings->save();
             return $dataProvider;
         }
