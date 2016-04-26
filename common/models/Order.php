@@ -67,7 +67,7 @@ class Order extends \yii\db\ActiveRecord
             'address' => 'Address',
             'email' => 'Email',
             'notes' => 'Notes',
-            'status' => 'Status',
+            'status' => 'Status'
         ];
     }
 

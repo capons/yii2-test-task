@@ -6,6 +6,7 @@ use common\models\Order;
 use common\models\OrderItem;
 use common\models\Product;
 use yz\shoppingcart\ShoppingCart;
+use yii\helpers\Url;
 
 class CartController extends \yii\web\Controller
 {
@@ -62,6 +63,23 @@ class CartController extends \yii\web\Controller
         $total = $cart->getCost();
 
         if ($order->load(\Yii::$app->request->post()) && $order->validate()) {
+            
+            if(!empty($_POST['Order']['status'])){
+                //$_POST['start_pay'] = 'some secret key';
+                return $this->render('pay',[
+                    'products' => $products,
+                    'total' => $total,
+                ]);
+                //return $this->redirect(['cart/pay']);
+                /*
+                return $this->render('order', [
+                    'pay' => $_POST['Order']['status'],
+                    'order' => $order,
+                    'products' => $products,
+                    'total' => $total,
+                ]);
+                */
+            }
             $transaction = $order->getDb()->beginTransaction();
             $order->save(false);
 
@@ -85,11 +103,22 @@ class CartController extends \yii\web\Controller
             \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
             $order->sendEmail();
 
-            return $this->redirect('catalog/list');
+            //return $this->redirect('catalog/list');
         }
 
         return $this->render('order', [
             'order' => $order,
+            'products' => $products,
+            'total' => $total,
+        ]);
+    }
+    public function actionPay(){
+
+        /* @var $cart ShoppingCart */
+        $cart = \Yii::$app->cart;
+        $products = $cart->getPositions();
+        $total = $cart->getCost();
+        return $this->render('pay',[
             'products' => $products,
             'total' => $total,
         ]);

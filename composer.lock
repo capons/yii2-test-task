@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e5a11f2683b58bcb5c5110cce2f3c874",
-    "content-hash": "b23fbc050d76e4bfc4ac13ddf9d4a59a",
+    "hash": "74ff014900f9c581e6976f3615a5576f",
+    "content-hash": "6af60a402934e7e934b7420cb73bb3da",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -132,6 +132,28 @@
                 "mask",
                 "plugins"
             ]
+        },
+        {
+            "name": "bower-asset/jquery.payment",
+            "version": "v1.3.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stripe/jquery.payment.git",
+                "reference": "6c434f10c678ef760db6e420994db39aa67af753"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stripe/jquery.payment/zipball/6c434f10c678ef760db6e420994db39aa67af753",
+                "reference": "6c434f10c678ef760db6e420994db39aa67af753",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery": ">=1.5"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": "lib/jquery.payment.js"
+            }
         },
         {
             "name": "bower-asset/punycode",
@@ -336,6 +358,48 @@
                 "yii"
             ],
             "time": "2015-09-08 11:18:44"
+        },
+        {
+            "name": "ruskid/yii2-stripe",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ruskid/yii2-stripe.git",
+                "reference": "fb7fde471fa56ec390a19bcaaf46971d8a970a18"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ruskid/yii2-stripe/zipball/fb7fde471fa56ec390a19bcaaf46971d8a970a18",
+                "reference": "fb7fde471fa56ec390a19bcaaf46971d8a970a18",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/jquery.payment": "*",
+                "yiisoft/yii2": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ruskid\\stripe\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GNU"
+            ],
+            "authors": [
+                {
+                    "name": "Victor Demin",
+                    "email": "demmbox@gmail.com"
+                }
+            ],
+            "description": "Yii2 Stripe Wrapper",
+            "homepage": "https://github.com/ruskid/yii2-stripe",
+            "keywords": [
+                "stripe",
+                "yii2"
+            ],
+            "time": "2016-03-21 13:28:32"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -945,7 +1009,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "ruskid/yii2-stripe": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -1,6 +1,8 @@
 <?php
 use \yii\helpers\Html;
 use \yii\bootstrap\ActiveForm;
+use yii\bootstrap\Modal;
+use ruskid\stripe\StripeCheckout;
 
 /* @var $this yii\web\View */
 /* @var $products common\models\Product[] */
@@ -57,15 +59,29 @@ use \yii\bootstrap\ActiveForm;
 
             <?= $form->field($order, 'phone') ?>
             <?= $form->field($order, 'email') ?>
+            <label>Payment</label>
+            <?= $form->field($order, 'status')->checkbox(['label' => 'Stripe pay','value'=>'Stripe'])  ?>
             <?= $form->field($order, 'notes')->textarea() ?>
 
             <div class="form-group row">
                 <div class="col-xs-12">
-                    <?= Html::submitButton('Order', ['class' => 'btn btn-primary']) ?>
+                    <?= Html::submitButton('Buy', ['class' => 'btn btn-primary','id' => 'buy-button']) ?>
                 </div>
             </div>
 
             <?php ActiveForm::end() ?>
+
+
+           
+            <?php
+            echo '<pre>';
+            print_r($_POST);
+            echo '</pre>';
+            if (isset($pay)){
+                echo $pay;
+            }
+            ?>
+
         </div>
     </div>
 </div>
