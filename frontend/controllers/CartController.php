@@ -5,6 +5,8 @@ namespace frontend\controllers;
 use common\models\Order;
 use common\models\OrderItem;
 use common\models\Product;
+use common\models\Payments;
+use yii\web\Session;
 use yz\shoppingcart\ShoppingCart;
 use yii\helpers\Url;
 use Stripe\Stripe;
@@ -55,33 +57,95 @@ class CartController extends \yii\web\Controller
     public function actionOrder()
     {
         $order = new Order();
-
+        $payment = New Payments();
         /* @var $cart ShoppingCart */
         $cart = \Yii::$app->cart;
-
         /* @var $products Product[] */
         $products = $cart->getPositions();
         $total = $cart->getCost();
+        if ($order->load(\Yii::$app->request->post()) && $order->validate()) {
+            if(!empty($_POST['Order']['status'])){ //create order with Stripe pay
+                //save customer info to session
+                $_SESSION['customer']['phone'] = $_POST['Order']['phone'];
+                $_SESSION['customer']['email'] = $_POST['Order']['email'];
+                $_SESSION['customer']['notes'] = $_POST['Order']['notes'];
+                return $this->render('pay',[ //redirect to pat page
+                    'products' => $products,
+                    'total' => $total,
+                ]);
+            } else { //create order without pay
+                $transaction = $order->getDb()->beginTransaction();
+                $order->save(false);
 
+                foreach ($products as $product) {
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->title = $product->title;
+                    $orderItem->price = $product->getPrice();
+                    $orderItem->product_id = $product->id;
+                    $orderItem->quantity = $product->getQuantity();
+                    if (!$orderItem->save(false)) {
+                        $transaction->rollBack();
+                        \Yii::$app->session->addFlash('error', 'Cannot place your order. Please contact us.');
+                        return $this->redirect('catalog/list');
+                    }
+                }
+                $transaction->commit();
+                \Yii::$app->cart->removeAll();
+                \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
+                $order->sendEmail();
+                return $this->redirect('catalog/list');
+            }
+        }
 
         //pay condition
         if (isset($_POST['stripeToken'])) {
             //try {
-            Stripe::setApiKey("sk_test_Pmtiqut8msdIXyyZqGniDvBy");
+            //start pay by object Stripe
+            Stripe::setApiKey("sk_test_Pmtiqut8msdIXyyZqGniDvBy"); //my api key
             $token = $_POST['stripeToken'];
-
             $customer = \Stripe\Customer::create(array(
                 'email' => $_POST['stripeEmail'],
                 'card' => $token
             ));
-            //end payment
             \Stripe\Charge::create(array(
                 'customer' =>$customer->id,
                 'amount' => $total,
                 'currency' => 'usd'
             ));
-            $_SESSION['test'] = 'test';
+            $transaction = $order->getDb()->beginTransaction();
+            $order -> phone = $_SESSION['customer']['phone'];
+            $order -> email = $_SESSION['customer']['email'];
+            $order -> notes = $_SESSION['customer']['notes'];
+            $order -> pay = 'pay'; // set new status
+            $order->save(false);
+            unset($_SESSION['customer']); //unset customer session
+            $payment->order_id = $order->id;
+            $payment->payment_id = $customer->id;
+            $payment->payment_token = $_POST['stripeToken'];
+            $payment->payment_method = $_POST['stripeTokenType'];
+            $payment->email = $_POST['stripeEmail'];
+            $payment->save(); //save payments information
+            foreach ($products as $product) {
+                $orderItem = new OrderItem();
+                $orderItem->order_id = $order->id;
+                $orderItem->title = $product->title;
+                $orderItem->price = $product->getPrice();
+                $orderItem->product_id = $product->id;
+                $orderItem->quantity = $product->getQuantity();
+                if (!$orderItem->save(false)) {
+                    $transaction->rollBack();
+                    \Yii::$app->session->addFlash('error', 'Cannot place your order. Please contact us.');
+                    return $this->redirect('catalog/list');
+                }
+            }
+            $transaction->commit();
+            \Yii::$app->cart->removeAll();
 
+            \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
+            $order->sendEmail();
+
+            return $this->redirect('catalog/list');
             $success = 1;
             $paymentProcessor="Credit card (www.stripe.com)";
             /*
@@ -117,62 +181,18 @@ class CartController extends \yii\web\Controller
             exit();
         }
             */
-
         }
 
 
-
-        if ($order->load(\Yii::$app->request->post()) && $order->validate()) {
-            if(!empty($_POST['Order']['status'])){ //create order with Stripe pay
-
-                //СОХРАНИТЬ ВСЕ ДАННЫЕ В СЕСИЮ И ПО ОКОНЧАНИЮ ОПЛАТЫ ИЗ СЕССИИ ПЕРЕНЕСТИ В БАЗУ
-                //$_POST['start_pay'] = 'some secret key';
-                return $this->render('pay',[
-                    'products' => $products,
-                    'total' => $total,
-                ]);
-                //return $this->redirect(['cart/pay']);
-                /*
-                return $this->render('order', [
-                    'pay' => $_POST['Order']['status'],
-                    'order' => $order,
-                    'products' => $products,
-                    'total' => $total,
-                ]);
-                */
-            } else { //create order without pay
-                $transaction = $order->getDb()->beginTransaction();
-                $order->save(false);
-
-                foreach ($products as $product) {
-                    $orderItem = new OrderItem();
-                    $orderItem->order_id = $order->id;
-                    $orderItem->title = $product->title;
-                    $orderItem->price = $product->getPrice();
-                    $orderItem->product_id = $product->id;
-                    $orderItem->quantity = $product->getQuantity();
-                    if (!$orderItem->save(false)) {
-                        $transaction->rollBack();
-                        \Yii::$app->session->addFlash('error', 'Cannot place your order. Please contact us.');
-                        return $this->redirect('catalog/list');
-                    }
-                }
-
-                $transaction->commit();
-                \Yii::$app->cart->removeAll();
-
-                \Yii::$app->session->addFlash('success', 'Thanks for your order. We\'ll contact you soon.');
-                $order->sendEmail();
-
-                return $this->redirect('catalog/list');
-            }
-        }
 
         return $this->render('order', [
             'order' => $order,
             'products' => $products,
             'total' => $total,
         ]);
+
+
+
     }
     public function actionPay(){
 

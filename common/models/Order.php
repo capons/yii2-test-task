@@ -24,7 +24,7 @@ class Order extends \yii\db\ActiveRecord
     const STATUS_NEW = 'New';
     const STATUS_IN_PROGRESS = 'In progress';
     const STATUS_DONE = 'Done';
-
+    public $pay; //for new status if pay by Stripe
     public function behaviors()
     {
         return [
@@ -82,8 +82,12 @@ class Order extends \yii\db\ActiveRecord
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
-            if ($this->isNewRecord) {
-                $this->status = self::STATUS_NEW;
+            if(empty($this->pay)) { //if false save new status ('pay')
+                if ($this->isNewRecord) {
+                    $this->status = self::STATUS_NEW;
+                }
+            } else {
+                $this -> status = $this->pay;
             }
             return true;
         } else {

@@ -1,5 +1,5 @@
 <?php
-require_once('C:/xampp/htdocs/bogdan/yii_test/yii2-test-task/vendor/autoload.php');
+//require_once('C:/xampp/htdocs/bogdan/yii_test/yii2-test-task/vendor/autoload.php');
 use \yii\helpers\Html;
 use \yii\bootstrap\ActiveForm;
 use yii\bootstrap\Modal;
@@ -77,14 +77,13 @@ use yii\helpers\Url;
 
            
             <?php
-            echo '<pre>';
-           // print_r($_POST);
-            echo '</pre>';
-
-           // Stripe::setApiKey("YOUR API KEY");
-            if(isset($_SESSION['test'])){
-                echo $_SESSION['test'];
+            if(isset($_SESSION['customer'])){
+                echo '<pre>';
+                print_r($_POST);
+                echo '</pre>';
             }
+
+           
             ?>
 
         </div>

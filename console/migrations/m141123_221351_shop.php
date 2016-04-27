@@ -62,6 +62,23 @@ class m141123_221351_shop extends Migration
 
         $this->addForeignKey('fk-order_item-order_id-order-id', '{{%order_item}}', 'order_id', '{{%order}}', 'id', 'CASCADE');
         $this->addForeignKey('fk-order_item-product_id-product-id', '{{%order_item}}', 'product_id', '{{%product}}', 'id', 'SET NULL');
+
+        $this->createTable('{{%payments}}', [
+            'id' => Schema::TYPE_PK,
+            'order_id' => Schema::TYPE_INTEGER,
+            'payment_id' => Schema::TYPE_INTEGER,
+            'payment_token' => Schema::TYPE_TEXT,
+            'payment_method' => Schema::TYPE_TEXT,
+            'email' => Schema::TYPE_STRING,
+        ], $tableOptions);
+
+        $this->addForeignKey('fk-payments-order_id-order_id', '{{%payments}}', 'order_id', '{{%order}}', 'id', 'RESTRICT');
+
+        $this->createTable('{{%settings}}', [
+            'id' => Schema::TYPE_PK,
+            'settings_name' => Schema::TYPE_STRING,
+            'crop_text' => Schema::TYPE_INTEGER,
+        ], $tableOptions);
     }
 
     public function down()
@@ -71,5 +88,7 @@ class m141123_221351_shop extends Migration
         $this->dropTable('{{%image}}');
         $this->dropTable('{{%product}}');
         $this->dropTable('{{%category}}');
+        $this->dropTable('{{%payments}}');
+        $this->dropTable('{{%settings}}');
     }
 }
