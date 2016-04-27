@@ -66,7 +66,7 @@ class m141123_221351_shop extends Migration
         $this->createTable('{{%payments}}', [
             'id' => Schema::TYPE_PK,
             'order_id' => Schema::TYPE_INTEGER,
-            'payment_id' => Schema::TYPE_INTEGER,
+            'payment_id' => Schema::TYPE_TEXT,
             'payment_token' => Schema::TYPE_TEXT,
             'payment_method' => Schema::TYPE_TEXT,
             'email' => Schema::TYPE_STRING,
